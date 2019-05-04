@@ -1,11 +1,14 @@
 package com.proyect.Tasks.model;
 
-public class Task {
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 
-    private String id;
-    private String userId;
+public class Task {
+    @Id
+    private String id = new ObjectId().toString();
+    private String userid;
     private String title;
-    private  boolean complete;
+    private boolean complete;
 
     public String getId() {
         return id;
@@ -15,12 +18,12 @@ public class Task {
         this.id = id;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUserid() {
+        return userid;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUserid(String userid) {
+        this.userid = userid;
     }
 
     public String getTitle() {
