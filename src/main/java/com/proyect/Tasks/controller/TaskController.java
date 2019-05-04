@@ -56,4 +56,13 @@ public class TaskController {
         return taskRepository.save(task);
     }
 
+    @DeleteMapping(value = "DeleteTask")
+    public Mono<ResponseEntity<Void>> deleteTask(@PathVariable(value = "id") String id) {
+        return taskRepository.findById(id)
+                .flatMap(existingTask ->
+                        taskRepository.delete(existingTask))
+                .then(Mono.just(new ResponseEntity<Void>(HttpStatus.ACCEPTED)))
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
 }
