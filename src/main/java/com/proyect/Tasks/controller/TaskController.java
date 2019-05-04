@@ -33,7 +33,7 @@ public class TaskController {
     }
 
     @GetMapping(value = "/getTask/{id}", produces = TEXT_EVENT_STREAM_VALUE)
-    public Mono<ResponseEntity<Task>> getTaskId(@PathVariable(value = "id") String id) {
+    public Mono<ResponseEntity<Task>> getTaskId(@PathVariable(value = "userid") String id) {
         return taskRepository.findById(id).map(saveId -> ResponseEntity.ok(saveId))
                 .defaultIfEmpty(ResponseEntity.notFound().build()).delayElement(Duration.ofMillis(DELAY_PER_ITEM_MS));
     }
@@ -55,6 +55,5 @@ public class TaskController {
     public Mono<Task> addTask(@Valid @RequestBody Task task) {
         return taskRepository.save(task);
     }
-
 
 }
