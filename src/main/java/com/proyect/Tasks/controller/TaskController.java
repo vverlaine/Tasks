@@ -56,7 +56,7 @@ public class TaskController {
         return taskRepository.save(task);
     }
 
-    @DeleteMapping(value = "DeleteTask")
+    @DeleteMapping(value = "/deleteTask/{id}")
     public Mono<ResponseEntity<Void>> deleteTask(@PathVariable(value = "id") String id) {
         return taskRepository.findById(id)
                 .flatMap(existingTask ->
