@@ -2,8 +2,15 @@ package com.proyect.Tasks.model;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+
+/* Collection = task
+    Objeto con getter y setters
+ */
+@Document("task")
 public class Task {
+
     @Id
     private String id = new ObjectId().toString();
     private String userid;

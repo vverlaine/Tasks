@@ -8,6 +8,11 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+
+/*
+    Se definen los accesos que se van a tener para
+    consumir el restful
+ */
 @Component
 public class CorsFilter implements WebFilter {
 
