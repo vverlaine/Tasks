@@ -5,12 +5,17 @@ import com.proyect.Tasks.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import java.time.Duration;
+import java.util.List;
+import java.util.UUID;
 
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 
@@ -23,15 +28,20 @@ public class TaskController {
 
     //Definimos el tiempo del delay
     private static final int DELAY_PER_ITEM_MS = 1;
-
     //Traemos el repositorio
     @Autowired
     private final TaskRepository taskRepository;
+    //Notificador de notificaciones
+    private EmitterProcessor<Task> emitterProcessor;
 
     public TaskController(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
+    @PostConstruct
+    private void setEmitterProcessor() {
+        emitterProcessor = EmitterProcessor.<Task>create();
+    }
 
     //Metodo para devolver todas las tareas
     @GetMapping(value = "/getTask", produces = TEXT_EVENT_STREAM_VALUE)
@@ -74,6 +84,41 @@ public class TaskController {
                         taskRepository.delete(existingTask))
                 .then(Mono.just(new ResponseEntity<Void>(HttpStatus.ACCEPTED)))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    /*
+    FLUJO REACTIVO ENVIANDO DATOS DE LA TAREA
+     */
+
+    private Flux<ServerSentEvent<Task>> getTaskSSE() {
+        return emitterProcessor.log()
+                .map((task) -> {
+                    System.out.println("Sending Task" + task.getId());
+                    return ServerSentEvent.<Task>builder()
+                            .id(UUID.randomUUID().toString())
+                            .event("Task Result")
+                            .data(task)
+                            .build();
+                }).concatWith(Flux.never());
+
+    }
+
+
+    private Flux<ServerSentEvent<Task>> getNotificationHertbeat() {
+        return Flux.interval(Duration.ofSeconds(2))
+                .map(i -> {
+                    System.out.println(String.format("Sending heartbeat [%s] ...", i.toString()));
+                    return ServerSentEvent.<Task>builder()
+                            .id(String.valueOf(i))
+                            .event("Heartbeat Result")
+                            .data(null)
+                            .build();
+                });
+    }
+
+    @GetMapping("/notification/sse")
+    public Flux<ServerSentEvent<Task>> getJobResultNotification() {
+        return Flux.merge(getNotificationHertbeat(), getTaskSSE());
     }
 
 }
